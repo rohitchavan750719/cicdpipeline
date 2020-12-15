@@ -1,0 +1,120 @@
+Step 1: update and upgrade your system
+
+First, update your system with the latest version, You can do this with the help of the following command:
+
+apt-get update -y && apt-get upgrade -y
+
+apt-get update command gets you an updated list of packages from the Internet.apt-get upgrade to install available upgrades of all packages currently installed on the system
+
+Step 2: To check if virtualization is supported on Linux
+
+grep -E — color ‘vmx|svm’ /proc/cpuinfo
+
+grep -searches for a particular pattern of characters
+(Regular Expression)
+vmx-It is intel processor flag
+svm-AMD flag
+If you got a match, you have a virtualization support
+Verify that the output is non-empty.
+
+
+Step 3: Install VirtualBox Hypervisor
+
+Install some required packages with the following command:
+
+apt-get install curl wget apt-transport-https -y
+
+Minikube supports both KVM and VirtualBox Hypervisor. So, you will need to install KVM or VirtualBox to your system.
+
+You can install VirtualBox with the following command:
+
+
+
+
+
+Once the installation is done, we can proceed to the next step.
+
+Step 4:Install Minikube
+
+Download the latest version of Minikube in your system .You can download it from the official website, with the following command.
+
+wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+Once the download is completed, copy the downloaded file under /usr/local/bin with the following command:
+
+cp minikube-linux-amd64 /usr/local/bin/minikube
+
+Next, give execution permission to the minikube with the following command:
+
+chmod 755 /usr/local/bin/minikube
+
+
+chmod 755 sets the 755 permission for a file. 755 means full permissions for the owner and read and execute permission for others.
+
+Now, check the version of Minikube
+
+minikube version
+
+Step 5: Install Kubectl
+
+The Kubernetes command-line tool, kubectl, allows you to run commands against Kubernetes clusters. You can use kubectl to deploy applications to inspect and manage cluster resources and view logs. By default, Kubectl is not available in the Ubuntu 18.04 default repository. So, you will need to add the Kubernetes repository to your system.
+Download and add the GPG key with the following command.
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+Next, add Kubernetes apt repository with the following command:
+
+echo “deb http://apt.kubernetes.io/ kubernetes-xenial main” | tee /etc/apt/sources.list.d/kubernetes.list
+
+Next, update the repository and install Kubectl with the following command
+
+apt-get update -y && apt-get install kubectl -y
+
+Now, verify whether kubectl is installed or not.
+
+Kubectl version -o json
+
+Step 6: Launch Single Node Kubernetes Cluster
+
+Now, start the cluster, using the following command
+
+minikube start —-vm-driver=none
+
+Output after executing the above command looks like:
+
+root@PRINHYLTPHP0981:/# minikube start — vm-driver=none
+😄 minikube v1.7.3 on Ubuntu 18.04
+✨ Using the none driver based on user configuration
+⌛ Reconfiguring existing host …
+🏃 Using the running none “minikube” VM …
+ℹ️ OS release is Ubuntu 18.04.4 LTS
+🐳 Preparing Kubernetes v1.17.3 on Docker 18.09.7 …
+▪ kubelet.resolv-conf=/run/systemd/resolve/resolv.conf
+🚀 Launching Kubernetes …
+🌟 Enabling addons: default-storageclass, storage-provisioner
+🤹 Configuring local host environment …
+🏄 Done! kubectl is now configured to use “minikube”
+
+The cluster can be interacted with using the kubectl CLI. This is the main approach used for managing Kubernetes and the applications running on the
+top of the cluster.
+Kubernetes Commands:
+Details of the cluster and its health status can be known using:
+
+kubectl cluster-info
+
+root@PRINHYLTPHP0981:/# kubectl cluster-info
+Kubernetes master is running at https://172.16.16.213:8443
+KubeDNS is running at https://172.16.16.213:8443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+To further debug and diagnose cluster problems, use ‘kubectl cluster-info dump’.
+
+To view nodes in the cluster:
+
+kubectl get nodes
+NAME           STATUS   ROLES   AGE     VERSION
+prinhyltphp0981 Ready   master   5d19h   v1.17.3
+
+Step 7: Deploy Nginx app to one of the nodes of the cluster
+
+Let’s run our first app on Kubernetes with the kubectl run command. The run command creates a new deployment. We need to provide the deployment name and the app image location. I have provided a Nginx image. If we want to run the app on a specific port so we could add the –port
+parameter as well.
+kubectl run my-nginx — image=nginx — port=80
